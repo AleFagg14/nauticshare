@@ -5,7 +5,9 @@ import java.time.LocalDate;
 public class Skipper extends Member{
     private String licenseNumber;
     private int experienceYears;
-    private double rating;
+    private String bio;              // NUOVO: Biografia dello skipper
+    private double avgRating;        // NUOVO: Valutazione media
+    private int ratingsCount;        // NUOVO: Conteggio recensioni per il calcolo della media
     private boolean available;
 
     public Skipper() {
@@ -20,8 +22,18 @@ public class Skipper extends Member{
         super(id, name, surname, email, passwordHash, city, birthday, hasLicense);
         this.licenseNumber = licenseNumber;
         this.experienceYears = experienceYears;
-        this.rating = rating;
+        this.avgRating = rating;
+        this.ratingsCount = 0;
         this.available = available;
+    }
+
+    public void updateRating(double newRating) {
+        if (newRating < 1.0 || newRating > 5.0) {
+            throw new IllegalArgumentException("La valutazione deve essere compresa tra 1 e 5.");
+        }
+        double totalScore = (this.avgRating * this.ratingsCount) + newRating;
+        this.ratingsCount++;
+        this.avgRating = totalScore / this.ratingsCount;
     }
 
     //Getters and setters
@@ -41,12 +53,20 @@ public class Skipper extends Member{
         this.experienceYears = experienceYears;
     }
 
-    public double getRating() {
-        return rating;
+    public double getAvgRating() {
+        return avgRating;
     }
 
-    public void setRating(double rating) {
-        this.rating = rating;
+    public void setAvgRating(double avgRating) {
+        this.avgRating = avgRating;
+    }
+
+    public int getRatingsCount() {
+        return ratingsCount;
+    }
+
+    public void setRatingsCount(int ratingsCount) {
+        this.ratingsCount = ratingsCount;
     }
 
     public boolean isAvailable() {
