@@ -12,6 +12,8 @@ public class Member {
     private LocalDate birthday;
     private boolean hasLicense;
 
+    public Member () {}
+
     //Senza id, per quando si crea un nuovo membro
     public Member(String name, String surname, String email, String passwordHash, String city,
                   LocalDate birthday, boolean hasLicense) {
@@ -23,8 +25,6 @@ public class Member {
         this.birthday = birthday;
         this.hasLicense = hasLicense;
     }
-
-    public Member () {}
 
     //Con id, per quando si recupera un membro dal database
     public Member (int id, String name, String surname, String email, String passwordHash, String city,
