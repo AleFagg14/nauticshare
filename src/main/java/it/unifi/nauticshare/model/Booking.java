@@ -2,91 +2,86 @@ package it.unifi.nauticshare.model;
 
 import java.time.LocalDate;
 
-public class Booking{
+public class Booking {
     private int id;
     private int memberId;
     private int boatId;
-    private Integer skipperId; // Per permettere null nel caso Member ha una patente.
-    private LocalDate bookingDate;
-    private int participants;
-    private RegistrationType registrationType;
+    private Integer skipperId; // nullable — può essere null
+    private LocalDate date;
+    private int seatsBooked;
+    private double totalPrice;
+    private RegistrationType regType;
 
-    public Booking(){}
+    public Booking() {}
 
-    public Booking(int memberId, int boatId, Integer skipperId, LocalDate bookingDate, int participants, RegistrationType registrationType) {
+    // Senza id — per inserimento nuova prenotazione
+    public Booking(int memberId, int boatId, Integer skipperId,
+                   LocalDate date, int seatsBooked,
+                   double totalPrice, RegistrationType regType) {
         this.memberId = memberId;
         this.boatId = boatId;
         this.skipperId = skipperId;
-        this.bookingDate = bookingDate;
-        this.participants = participants;
-        this.registrationType = registrationType;
+        this.date = date;
+        this.seatsBooked = seatsBooked;
+        this.totalPrice = totalPrice;
+        this.regType = regType;
     }
 
-    public Booking(int id, int memberId, int boatId, Integer skipperId, LocalDate bookingDate, int participants, RegistrationType registrationType) {
+    // Con id — per lettura da DB
+    public Booking(int id, int memberId, int boatId, Integer skipperId,
+                   LocalDate date, int seatsBooked,
+                   double totalPrice, RegistrationType regType) {
         this.id = id;
         this.memberId = memberId;
         this.boatId = boatId;
         this.skipperId = skipperId;
-        this.bookingDate = bookingDate;
-        this.participants = participants;
-        this.registrationType = registrationType;
+        this.date = date;
+        this.seatsBooked = seatsBooked;
+        this.totalPrice = totalPrice;
+        this.regType = regType;
     }
 
-    // Getters and setters
-    public int getId() {
-        return id;
+    // Cancellabile solo se la data dell'uscita è futura
+    public boolean isCancellable() {
+        return date != null && date.isAfter(LocalDate.now());
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    // Getters e setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public int getMemberId() {
-        return memberId;
-    }
+    public int getMemberId() { return memberId; }
+    public void setMemberId(int memberId) { this.memberId = memberId; }
 
-    public void setMemberId(int memberId) {
-        this.memberId = memberId;
-    }
+    public int getBoatId() { return boatId; }
+    public void setBoatId(int boatId) { this.boatId = boatId; }
 
-    public int getBoatId() {
-        return boatId;
-    }
+    public Integer getSkipperId() { return skipperId; }
+    public void setSkipperId(Integer skipperId) { this.skipperId = skipperId; }
 
-    public void setBoatId(int boatId) {
-        this.boatId = boatId;
-    }
+    public LocalDate getDate() { return date; }
+    public void setDate(LocalDate date) { this.date = date; }
 
-    public Integer getSkipperId() {
-        return skipperId;
-    }
+    public int getSeatsBooked() { return seatsBooked; }
+    public void setSeatsBooked(int seatsBooked) { this.seatsBooked = seatsBooked; }
 
-    public void setSkipperId(Integer skipperId) {
-        this.skipperId = skipperId;
-    }
+    public double getTotalPrice() { return totalPrice; }
+    public void setTotalPrice(double totalPrice) { this.totalPrice = totalPrice; }
 
-    public LocalDate getBookingDate() {
-        return bookingDate;
-    }
+    public RegistrationType getRegType() { return regType; }
+    public void setRegType(RegistrationType regType) { this.regType = regType; }
 
-    public void setBookingDate(LocalDate bookingDate) {
-        this.bookingDate = bookingDate;
+    @Override
+    public String toString() {
+        return "Booking{" +
+                "id=" + id +
+                ", memberId=" + memberId +
+                ", boatId=" + boatId +
+                ", skipperId=" + skipperId +
+                ", date=" + date +
+                ", seatsBooked=" + seatsBooked +
+                ", totalPrice=" + totalPrice +
+                ", regType=" + regType +
+                '}';
     }
-
-    public int getParticipants() {
-        return participants;
-    }
-
-    public void setParticipants(int participants) {
-        this.participants = participants;
-    }
-
-    public RegistrationType getRegistrationType() {
-        return registrationType;
-    }
-
-    public void setRegistrationType(RegistrationType registrationType) {
-        this.registrationType = registrationType;
-    }
-
 }
