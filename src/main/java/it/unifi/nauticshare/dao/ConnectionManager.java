@@ -46,4 +46,14 @@ public class ConnectionManager {
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(url, user, password);
     }
+
+    // Metodo per testare la connessione al database
+    public static boolean testConnection() {
+        try (Connection conn = getConnection()) {
+            return conn != null && !conn.isClosed();
+        } catch (SQLException e) {
+            System.err.println("Connessione DB non disponibile: " + e.getMessage());
+            return false;
+        }
+    }
 }
