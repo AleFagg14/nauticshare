@@ -2,10 +2,15 @@ package it.unifi.nauticshare.cli;
 
 import it.unifi.nauticshare.dao.*;
 import it.unifi.nauticshare.dto.*;
+import it.unifi.nauticshare.exception.BoatNotFoundException;
+import it.unifi.nauticshare.model.Boat;
+import it.unifi.nauticshare.model.BoatType;
 import it.unifi.nauticshare.model.Member;
 import it.unifi.nauticshare.service.*;
 
+
 import java.time.LocalDate;
+import java.util.List;
 
 public class MainApp {
 
@@ -63,5 +68,54 @@ public class MainApp {
             System.err.println("Signup FALLITO: " + e.getMessage());
             e.printStackTrace();
         }
+
+
+        //TEST BOAT SERVICE
+        System.out.println("\n=== TEST BOAT SERVICE ===");
+        BoatDAO boatDAO = new BoatDAOJdbcImpl();
+        SkipperDAO skipperDAO = new SkipperDAOJdbcImpl();
+        BoatService boatService = new BoatServiceImpl(boatDAO, skipperDAO);
+
+// Test 1 — lista tutte le barche
+        System.out.println("Barche nel DB:");
+        boatService.findAll().forEach(b ->
+                System.out.println("  id=" + b.getId() +
+                        " name=" + b.getName() +
+                        " type=" + b.getType() +
+                        " seats=" + b.getSeats()));
+
+// Test 2 — aggiungi una nuova barca
+        try {
+            BoatDTO newBoat = new BoatDTO(
+                    "IT-TEST-001", "Barca Test", BoatType.YACHT,
+                    6, null, "Barca di test"
+            );
+            Boat added = boatService.addBoat(newBoat);
+            System.out.println("Barca aggiunta OK — id=" + added.getId());
+        } catch (Exception e) {
+            System.err.println("addBoat FALLITO: " + e.getMessage());
+        }
+
+// Test 3 — barche disponibili
+        try {
+            List<Boat> available = boatService.findAvailable(
+                    LocalDate.now().plusDays(1),
+                    LocalDate.now().plusDays(5),
+                    null // tutti i tipi
+            );
+            System.out.println("Barche disponibili: " + available.size());
+            available.forEach(b -> System.out.println("  " + b.getName()));
+        } catch (Exception e) {
+            System.err.println("findAvailable FALLITO: " + e.getMessage());
+        }
+
+// Test 4 — barca non esistente
+        try {
+            boatService.findById(9999);
+        } catch (BoatNotFoundException e) {
+            System.out.println("BoatNotFoundException OK: " + e.getMessage());
+        }
+
+
     }
 }
