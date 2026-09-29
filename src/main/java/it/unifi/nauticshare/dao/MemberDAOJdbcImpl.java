@@ -9,12 +9,13 @@ import java.util.List;
 
 public class MemberDAOJdbcImpl implements MemberDAO{
 
-    @Override  //Inserimento nuovo membro
-    public boolean insert(Member member){
+    @Override
+    public boolean insert(Member member) {
+        // RETURNING id fa sì che PostgreSQL restituisca l'id generato
         String sql = "INSERT INTO member " +
-                "(name, surname, email, password_hash, " +
-                "city, birthday, has_license) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(name, surname, email, password_hash, city, birthday, has_license) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id";
+
         try (Connection conn = ConnectionManager.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
@@ -26,12 +27,28 @@ public class MemberDAOJdbcImpl implements MemberDAO{
             ps.setDate(6, Date.valueOf(member.getBirthday()));
             ps.setBoolean(7, member.isHasLicense());
 
-            return ps.executeUpdate() > 0;  //Restituisce il numero di righe da modificare. Se >0 allora l'inserimento è andato a buon fine
-        } catch (SQLException e){
-            System.err.println("Errore insert Member: " + e.getMessage());
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int generatedId = rs.getInt("id");
+                    System.out.println("[DAO] Insert riuscito — id generato: "
+                            + generatedId);
+                    member.setId(generatedId); // aggiorna l'oggetto con l'id reale
+                    return true;
+                }
+            }
+
+        } catch (SQLException e) {
+            // Prima stampavamo solo e.getMessage() — ora stampiamo lo stack completo
+            // così vediamo la causa esatta del fallimento
+            System.err.println("[DAO] Errore insert Member: " + e.getMessage());
+            e.printStackTrace(); // ← aggiunto per vedere la causa completa
             return false;
         }
+        return false;
     }
+
+
     @Override
     public Member findById(int id){
         String sql = "SELECT * FROM member WHERE id = ?";

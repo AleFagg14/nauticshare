@@ -29,7 +29,7 @@ public class ConnectionManager {
             }
             prop.load(input);
             url = prop.getProperty("db.url");
-            user = prop.getProperty("db.username");
+            user = prop.getProperty("db.user");
             password = prop.getProperty("db.password");
 
             // Carica esplicitamente il driver PostgreSQL
@@ -49,11 +49,14 @@ public class ConnectionManager {
 
     // Metodo per testare la connessione al database
     public static boolean testConnection() {
-        try (Connection conn = getConnection()) {
-            return conn != null && !conn.isClosed();
+        try (Connection conn = ConnectionManager.getConnection()) {
+            if (conn != null && !conn.isClosed()) {
+                System.out.println("✅ Connessione al database stabilita con successo!");
+                return true;
+            }
         } catch (SQLException e) {
-            System.err.println("Connessione DB non disponibile: " + e.getMessage());
-            return false;
+            System.err.println("❌ Errore di connessione: " + e.getMessage());
         }
+        return false;
     }
 }
