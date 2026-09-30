@@ -3,11 +3,10 @@ package it.unifi.nauticshare.cli;
 import it.unifi.nauticshare.dao.*;
 import it.unifi.nauticshare.dto.*;
 import it.unifi.nauticshare.exception.BoatNotFoundException;
+import it.unifi.nauticshare.exception.InvalidRatingException;
+import it.unifi.nauticshare.exception.MemberNotFoundException;
 import it.unifi.nauticshare.exception.UnauthorizedOperationException;
-import it.unifi.nauticshare.model.Boat;
-import it.unifi.nauticshare.model.BoatType;
-import it.unifi.nauticshare.model.Member;
-import it.unifi.nauticshare.model.Rental;
+import it.unifi.nauticshare.model.*;
 import it.unifi.nauticshare.service.*;
 
 
@@ -159,6 +158,131 @@ public class MainApp {
             System.err.println("cancelRental FALLITO: " + e.getMessage());
         }
 
+
+        System.out.println("\n=== TEST BOOKING SERVICE ===");
+        BookingService bookingService = new BookingServiceImpl(
+                bookingDAO, memberDAO, boatDAO, skipperDAO, rentalDAO);
+
+// Test 1 — prenotazione valida
+// Laura (id=2, senza patente) può prenotare con skipper
+        try {
+            BookingDTO dto = new BookingDTO(
+                    2, 1, null,
+                    LocalDate.now().plusDays(2),
+                    3, RegistrationType.INDIVIDUAL
+            );
+            Booking b = bookingService.createBooking(dto);
+            System.out.println("Booking creato OK — id=" + b.getId() +
+                    " prezzo=" + b.getTotalPrice() +
+                    " skipperId=" + b.getSkipperId());
+        } catch (Exception e) {
+            System.err.println("createBooking FALLITO: " + e.getMessage());
+        }
+
+// Test 2 — barca senza skipper (Freccia Blu, id=3)
+        try {
+            BookingDTO dto = new BookingDTO(
+                    2, 3, null,
+                    LocalDate.now().plusDays(3),
+                    2, RegistrationType.INDIVIDUAL
+            );
+            bookingService.createBooking(dto);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Skipper mancante OK: " + e.getMessage());
+        }
+
+// Test 3 — troppi posti (Luna Rossa ha 8 posti, max 7 per passeggeri)
+        try {
+            BookingDTO dto = new BookingDTO(
+                    2, 1, null,
+                    LocalDate.now().plusDays(5),
+                    8, RegistrationType.FAMILY
+            );
+            bookingService.createBooking(dto);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Capienza superata OK: " + e.getMessage());
+        }
+
+// Test 4 — valutazione su booking futuro (deve fallire)
+        try {
+            List<Booking> bookings = bookingService.findByMemberId(2);
+            if (!bookings.isEmpty()) {
+                bookingService.rateSkipper(bookings.get(0).getId(), 4.5);
+            }
+        } catch (InvalidRatingException e) {
+            System.out.println("Rating futuro bloccato OK: " + e.getMessage());
+        }
+
+
+        System.out.println("\n=== TEST SKIPPER SERVICE ===");
+        SkipperService skipperService = new SkipperServiceImpl(
+                skipperDAO, memberDAO);
+
+// Test 1 — lista tutti gli skipper
+        System.out.println("Skipper nel DB:");
+        skipperService.findAll().forEach(s ->
+                System.out.println("  id=" + s.getId() +
+                        " name=" + s.getName() +
+                        " rating=" + s.getAvgRating()));
+
+// Test 2 — promuovi Laura a skipper (non ha patente — deve fallire)
+        try {
+            SkipperDTO dto = new SkipperDTO(2, 3,
+                    "Patente B", 0.0, "Bio di test");
+            skipperService.promoteToSkipper(dto);
+        } catch (UnauthorizedOperationException e) {
+            System.out.println("Patente mancante OK: " + e.getMessage());
+        }
+
+// Test 3 — promuovi Luca (id=3, ha la patente)
+// Luca è già skipper nel default.sql — deve fallire
+        try {
+            SkipperDTO dto = new SkipperDTO(3, 3,
+                    "Patente A", 0.0, "Bio Luca");
+            skipperService.promoteToSkipper(dto);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Già skipper OK: " + e.getMessage());
+        }
+
+        System.out.println("\n=== TEST REGISTRATION SERVICE ===");
+        //RegistrationDAO registrationDAO = new RegistrationDAOJdbcImpl();
+        RegistrationService registrationService = new RegistrationServiceImpl(
+                registrationDAO, memberDAO);
+
+// Test 1 — crea iscrizione per Laura (id=2)
+        try {
+            RegistrationDTO dto = new RegistrationDTO(
+                    2, RegistrationType.INDIVIDUAL,
+                    LocalDate.now().getYear()
+            );
+            Registration reg = registrationService.createRegistration(dto);
+            System.out.println("Iscrizione creata OK — id=" + reg.getId() +
+                    " tipo=" + reg.getType());
+        } catch (Exception e) {
+            System.err.println("createRegistration FALLITO: " + e.getMessage());
+        }
+
+// Test 2 — doppia iscrizione per Laura (deve fallire)
+        try {
+            RegistrationDTO dto = new RegistrationDTO(
+                    2, RegistrationType.FAMILY,
+                    LocalDate.now().getYear()
+            );
+            registrationService.createRegistration(dto);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Doppia iscrizione bloccata OK: " + e.getMessage());
+        }
+
+// Test 3 — iscrizione per membro inesistente
+        try {
+            RegistrationDTO dto = new RegistrationDTO(
+                    9999, RegistrationType.INDIVIDUAL,
+                    LocalDate.now().getYear()
+            );
+            registrationService.createRegistration(dto);
+        } catch (MemberNotFoundException e) {
+            System.out.println("Membro inesistente OK: " + e.getMessage());
+        }
 
 
 
