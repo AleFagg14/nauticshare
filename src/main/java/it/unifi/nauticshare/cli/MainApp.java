@@ -3,9 +3,11 @@ package it.unifi.nauticshare.cli;
 import it.unifi.nauticshare.dao.*;
 import it.unifi.nauticshare.dto.*;
 import it.unifi.nauticshare.exception.BoatNotFoundException;
+import it.unifi.nauticshare.exception.UnauthorizedOperationException;
 import it.unifi.nauticshare.model.Boat;
 import it.unifi.nauticshare.model.BoatType;
 import it.unifi.nauticshare.model.Member;
+import it.unifi.nauticshare.model.Rental;
 import it.unifi.nauticshare.service.*;
 
 
@@ -75,6 +77,7 @@ public class MainApp {
         BoatDAO boatDAO = new BoatDAOJdbcImpl();
         SkipperDAO skipperDAO = new SkipperDAOJdbcImpl();
         BoatService boatService = new BoatServiceImpl(boatDAO, skipperDAO);
+        BookingDAO bookingDAO = new BookingDAOJdbcImpl();
 
 // Test 1 — lista tutte le barche
         System.out.println("Barche nel DB:");
@@ -115,6 +118,48 @@ public class MainApp {
         } catch (BoatNotFoundException e) {
             System.out.println("BoatNotFoundException OK: " + e.getMessage());
         }
+
+
+
+        System.out.println("\n=== TEST RENTAL SERVICE ===");
+        RentalDAO rentalDAO = new RentalDAOJdbcImpl();
+        RentalService rentalService = new RentalServiceImpl(
+                rentalDAO, memberDAO, boatDAO, bookingDAO );
+
+// Test 1 — membro senza patente (Laura, id=2)
+        try {
+            RentalDTO dto = new RentalDTO(2, 1,
+                    LocalDate.now().plusDays(3),
+                    LocalDate.now().plusDays(6), 0);
+            rentalService.createRental(dto);
+        } catch (UnauthorizedOperationException e) {
+            System.out.println("Patente richiesta OK: " + e.getMessage());
+        }
+
+// Test 2 — noleggio valido (Mario, id=1, ha la patente)
+        try {
+            RentalDTO dto = new RentalDTO(1, 3,
+                    LocalDate.now().plusDays(1),
+                    LocalDate.now().plusDays(4), 2);
+            Rental r = rentalService.createRental(dto);
+            System.out.println("Rental creato OK — id=" + r.getId() +
+                    " prezzo=" + r.getTotalPrice());
+        } catch (Exception e) {
+            System.err.println("createRental FALLITO: " + e.getMessage());
+        }
+
+// Test 3 — cancellazione
+        try {
+            List<Rental> futuri = rentalService.findFuture(1);
+            if (!futuri.isEmpty()) {
+                boolean cancelled = rentalService.cancelRental(futuri.get(0).getId());
+                System.out.println("Cancellazione OK: " + cancelled);
+            }
+        } catch (Exception e) {
+            System.err.println("cancelRental FALLITO: " + e.getMessage());
+        }
+
+
 
 
     }
