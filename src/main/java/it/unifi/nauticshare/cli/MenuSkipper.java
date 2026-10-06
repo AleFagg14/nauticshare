@@ -17,12 +17,13 @@ public class MenuSkipper extends MenuMembro {
                        BoatController boatController,
                        RentalController rentalController,
                        BookingController bookingController,
-                       RegistrationController registrationController) {
+                       RegistrationController registrationController,
+                       SkipperController skipperController) {
         // Richiama il costruttore di MenuMembro —
         // eredita tutte le funzionalità del Membro
         super(scanner, member, boatController,
                 rentalController, bookingController,
-                registrationController);
+                registrationController, skipperController);
         this.scanner            = scanner;
         this.skipper            = skipper;
         this.bookingController  = bookingController;

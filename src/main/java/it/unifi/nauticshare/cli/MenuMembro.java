@@ -19,18 +19,20 @@ public class MenuMembro {
     private final RentalController rentalController;
     private final BookingController bookingController;
     private final RegistrationController registrationController;
+    private final SkipperController skipperController;
 
     public MenuMembro(Scanner scanner, Member member,
                       BoatController boatController,
                       RentalController rentalController,
                       BookingController bookingController,
-                      RegistrationController registrationController) {
+                      RegistrationController registrationController,SkipperController skipperController) {
         this.scanner                = scanner;
         this.member                 = member;
         this.boatController         = boatController;
         this.rentalController       = rentalController;
         this.bookingController      = bookingController;
         this.registrationController = registrationController;
+        this.skipperController = skipperController;
     }
 
     public void show() {
@@ -89,31 +91,79 @@ public class MenuMembro {
     private void prenotaConSkipper() {
         System.out.println("\n─── PRENOTA USCITA CON SKIPPER ───");
 
-        System.out.print("ID barca: ");
-        int boatId = readInt();
-        if (boatId < 0) return;
-
+        // STEP 1 — Data prima di tutto
         LocalDate date = readDate("Data uscita (YYYY-MM-DD): ");
 
         System.out.print("Numero di posti da prenotare: ");
         int seats = readInt();
         if (seats < 0) return;
 
+        // STEP 2 — Mostra barche disponibili in quella data
+        // Usiamo startDate = endDate = date per cercare disponibilità
+        // in un singolo giorno
+        List<Boat> available = boatController.findAvailable(
+                date, date.plusDays(1), null);
+
+        // Filtra solo barche con skipper assegnato
+        // (le altre sono solo per noleggio diretto)
+        List<Boat> withSkipper = available.stream()
+                .filter(b -> skipperController.findByBoatId(b.getId()) != null)
+                .toList();
+
+        if (withSkipper.isEmpty()) {
+            System.out.println(
+                    "Nessuna barca con skipper disponibile per il " + date + "\n");
+            return;
+        }
+
+        // STEP 3 — Mostra lista con dettagli skipper
+        System.out.println("\nBarche disponibili con skipper:");
+        withSkipper.forEach(b -> {
+            Skipper s = skipperController.findByBoatId(b.getId());
+            System.out.printf(
+                    "  [%d] %s | %s | %d posti | " +
+                            "Skipper: %s %s (★ %.1f) | %s%n",
+                    b.getId(), b.getName(), b.getType(),
+                    b.getSeats() - 1, // posti disponibili = totale - 1 skipper
+                    s.getName(), s.getSurname(), s.getAvgRating(),
+                    b.getDescription() != null ? b.getDescription() : "");
+        });
+
+        // STEP 4 — Selezione dalla lista
+        System.out.print("\nScegli ID barca: ");
+        int boatId = readInt();
+        if (boatId < 0) return;
+
+        // Verifica che l'id scelto sia nella lista mostrata
+        boolean validChoice = withSkipper.stream()
+                .anyMatch(b -> b.getId() == boatId);
+        if (!validChoice) {
+            System.out.println("ID non valido. Scegli dalla lista.\n");
+            return;
+        }
+
+        // STEP 5 — Tipo iscrizione
         System.out.println("Tipo iscrizione (1=INDIVIDUAL 2=FAMILY): ");
         RegistrationType regType = scanner.nextLine().trim().equals("2")
                 ? RegistrationType.FAMILY
                 : RegistrationType.INDIVIDUAL;
 
+        // STEP 6 — Crea il booking
         Booking booking = bookingController.createBooking(
                 new BookingDTO(member.getId(), boatId,
                         null, date, seats, regType));
 
         if (booking != null) {
             System.out.printf(
-                    "Prenotazione confermata! Id=%d | €%.2f%n%n",
-                    booking.getId(), booking.getTotalPrice());
+                    "\n✅ Prenotazione confermata!%n" +
+                            "   ID prenotazione: %d%n" +
+                            "   Data: %s%n" +
+                            "   Posti: %d%n" +
+                            "   Totale: €%.2f%n%n",
+                    booking.getId(), booking.getDate(),
+                    booking.getSeatsBooked(), booking.getTotalPrice());
         } else {
-            System.out.println("Prenotazione fallita. Controlla disponibilità.\n");
+            System.out.println("❌ Prenotazione fallita.\n");
         }
     }
 

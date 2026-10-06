@@ -143,13 +143,13 @@ public class MainApp {
                             new MenuSkipper(
                                     scanner, logged, asSkipper,
                                     boatController, rentalController,
-                                    bookingController, registrationController
+                                    bookingController, registrationController, skipperController
                             ).show();
                         } else {
                             new MenuMembro(
                                     scanner, logged,
                                     boatController, rentalController,
-                                    bookingController, registrationController
+                                    bookingController, registrationController, skipperController
                             ).show();
                         }
                     }
