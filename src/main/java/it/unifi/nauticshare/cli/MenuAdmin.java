@@ -201,6 +201,7 @@ public class MenuAdmin {
         Skipper promoted = skipperController.promoteToSkipper(
                 new SkipperDTO(memberId, boatId,
                         certificate,
+                        0.0, // Imposto avgRating iniziale a 0.0
                         bio.isEmpty() ? null : bio));
 
         System.out.println(promoted != null

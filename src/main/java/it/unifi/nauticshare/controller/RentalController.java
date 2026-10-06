@@ -7,6 +7,8 @@ import it.unifi.nauticshare.exception.MemberNotFoundException;
 import it.unifi.nauticshare.exception.UnauthorizedOperationException;
 import it.unifi.nauticshare.model.Rental;
 import it.unifi.nauticshare.service.RentalService;
+import it.unifi.nauticshare.exception.MemberNotFoundException;
+import it.unifi.nauticshare.exception.BookingConflictException;
 
 import java.util.List;
 

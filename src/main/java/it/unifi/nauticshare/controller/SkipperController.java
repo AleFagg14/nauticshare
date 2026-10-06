@@ -5,6 +5,8 @@ import it.unifi.nauticshare.exception.MemberNotFoundException;
 import it.unifi.nauticshare.exception.UnauthorizedOperationException;
 import it.unifi.nauticshare.model.Skipper;
 import it.unifi.nauticshare.service.SkipperService;
+import it.unifi.nauticshare.exception.MemberNotFoundException;
+import it.unifi.nauticshare.exception.BookingConflictException;
 
 import java.util.List;
 

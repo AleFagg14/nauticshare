@@ -4,6 +4,8 @@ import it.unifi.nauticshare.dto.RegistrationDTO;
 import it.unifi.nauticshare.exception.MemberNotFoundException;
 import it.unifi.nauticshare.model.Registration;
 import it.unifi.nauticshare.service.RegistrationService;
+import it.unifi.nauticshare.exception.MemberNotFoundException;
+import it.unifi.nauticshare.exception.BookingConflictException;
 
 public class RegistrationController {
 

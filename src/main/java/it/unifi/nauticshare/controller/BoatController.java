@@ -6,6 +6,8 @@ import it.unifi.nauticshare.model.Boat;
 import it.unifi.nauticshare.model.BoatType;
 import it.unifi.nauticshare.service.BoatService;
 
+
+
 import java.time.LocalDate;
 import java.util.List;
 

@@ -1,11 +1,42 @@
 package it.unifi.nauticshare.cli;
 
-import it.unifi.nauticshare.controller.*;
-import it.unifi.nauticshare.dao.*;
-import it.unifi.nauticshare.dto.LoginDTO;
+import it.unifi.nauticshare.dao.ConnectionManager;
+import it.unifi.nauticshare.dao.MemberDAO;
+import it.unifi.nauticshare.dao.MemberDAOJdbcImpl;
+import it.unifi.nauticshare.dao.BoatDAO;
+import it.unifi.nauticshare.dao.BoatDAOJdbcImpl;
+import it.unifi.nauticshare.dao.SkipperDAO;
+import it.unifi.nauticshare.dao.SkipperDAOJdbcImpl;
+import it.unifi.nauticshare.dao.RentalDAO;
+import it.unifi.nauticshare.dao.RentalDAOJdbcImpl;
+import it.unifi.nauticshare.dao.BookingDAO;
+import it.unifi.nauticshare.dao.BookingDAOJdbcImpl;
+import it.unifi.nauticshare.dao.RegistrationDAO;
+import it.unifi.nauticshare.dao.RegistrationDAOJdbcImpl;
+
+import it.unifi.nauticshare.service.MemberService;
+import it.unifi.nauticshare.service.MemberServiceImpl;
+import it.unifi.nauticshare.service.BoatService;
+import it.unifi.nauticshare.service.BoatServiceImpl;
+import it.unifi.nauticshare.service.SkipperService;
+import it.unifi.nauticshare.service.SkipperServiceImpl;
+import it.unifi.nauticshare.service.RentalService;
+import it.unifi.nauticshare.service.RentalServiceImpl;
+import it.unifi.nauticshare.service.BookingService;
+import it.unifi.nauticshare.service.BookingServiceImpl;
+import it.unifi.nauticshare.service.RegistrationService;
+import it.unifi.nauticshare.service.RegistrationServiceImpl;
+
+import it.unifi.nauticshare.controller.MemberController;
+import it.unifi.nauticshare.controller.BoatController;
+import it.unifi.nauticshare.controller.SkipperController;
+import it.unifi.nauticshare.controller.RentalController;
+import it.unifi.nauticshare.controller.BookingController;
+import it.unifi.nauticshare.controller.RegistrationController;
+
 import it.unifi.nauticshare.model.Member;
 import it.unifi.nauticshare.model.Skipper;
-import it.unifi.nauticshare.service.*;
+import it.unifi.nauticshare.dto.LoginDTO;
 
 import java.util.Scanner;
 
