@@ -141,7 +141,14 @@ public class RentalController {
     // Ogni partecipante aggiuntivo costa €10 (UC-13 Aggiungi Partecipante a Noleggio).
     public boolean addParticipant(int rentalId) {
         try {
-            return rentalService.addParticipant(rentalId);
+            boolean updated = rentalService.addParticipant(rentalId);
+            if (updated) {
+                Rental updatedRental = rentalService.findById(rentalId);
+                System.out.printf("✅ Partecipante aggiunto con successo!%n" +
+                                "   Nuovo Totale Noleggio [ID %d]: €%.2f%n%n",
+                        rentalId, updatedRental.getTotalPrice());
+            }
+            return updated;
         } catch (UnauthorizedOperationException e) {
             System.err.println("[RentalController] Aggiunta non consentita: "
                     + e.getMessage());

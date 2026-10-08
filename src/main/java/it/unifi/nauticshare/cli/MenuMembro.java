@@ -262,27 +262,60 @@ public class MenuMembro {
             return;
         }
 
-        past.forEach(b -> System.out.printf(
-                "  [%d] Data=%s | BarcaId=%d%n",
-                b.getId(), b.getDate(), b.getBoatId()));
+        // Mostra le uscite passate includendo i dettagli dello skipper, usa skipperId del booking,
+        // non la barca attuale (lo skipper potrebbe essere cambiato)
+        past.forEach(b -> {
+            String skipperName = "Non assegnato";
+            if (b.getSkipperId() != null) {
+                Skipper s = skipperController.findById(b.getSkipperId());
+                if (s != null) skipperName = s.getName() + " " + s.getSurname();
+            }
+            System.out.printf("  [%d] Data=%s | BarcaId=%d | Skipper: %s%n",
+                    b.getId(), b.getDate(), b.getBoatId(), skipperName);
+        });
 
-        System.out.print("ID prenotazione da valutare: ");
+        System.out.print("\nID prenotazione da valutare (0 per annullare): ");
         int bookingId = readInt();
         if (bookingId < 0) return;
+
+        // Trova la prenotazione selezionata per mostrare il nome dello skipper confermato
+        Booking selected = past.stream()
+                .filter(b -> b.getId() == bookingId)
+                .findFirst()
+                .orElse(null);
+
+        if (selected == null) {
+            System.out.println("ID prenotazione non valido.\n");
+            return;
+        }
+
+        // Mostra il nome dello skipper che si sta valutando
+        // Usa skipperId del booking — dato storico affidabile
+        if (selected.getSkipperId() != null) {
+            Skipper targetSkipper = skipperController
+                    .findById(selected.getSkipperId());
+            if (targetSkipper != null) {
+                System.out.printf("Stai valutando lo skipper: %s %s%n",
+                        targetSkipper.getName(), targetSkipper.getSurname());
+            }
+        }
 
         double rating = -1;
         while (rating < 1.0 || rating > 5.0) {
             System.out.print("Valutazione (1.0 - 5.0): ");
             try {
                 rating = Double.parseDouble(scanner.nextLine().trim());
+                if (rating < 1.0 || rating > 5.0) {
+                    System.out.println("Inserisci un valore tra 1.0 e 5.0.");
+                }
             } catch (NumberFormatException e) {
-                System.out.println("Inserisci un numero valido.");
+                System.out.println("Inserisci un numero valido (es. 4.5).");
             }
         }
 
         boolean rated = bookingController.rateSkipper(bookingId, rating);
         System.out.println(rated
-                ? "Valutazione registrata!\n"
+                ? "Valutazione registrata con successo!\n"
                 : "Valutazione fallita.\n");
     }
 

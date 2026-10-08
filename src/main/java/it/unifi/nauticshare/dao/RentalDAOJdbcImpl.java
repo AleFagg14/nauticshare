@@ -156,6 +156,27 @@ public class RentalDAOJdbcImpl implements RentalDAO {
         return false;
     }
 
+
+    @Override
+    public boolean update(Rental rental) {
+        String sql = "UPDATE rental " +
+                "SET num_participants = ?, total_price = ? " +
+                "WHERE id = ?";
+
+        try (Connection conn = ConnectionManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setInt(1, rental.getNumParticipants());
+            ps.setDouble(2, rental.getTotalPrice());
+            ps.setInt(3, rental.getId());
+
+            return ps.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Errore update Rental: " + e.getMessage());
+            return false;
+        }
+    }
+
     private Rental mapResultSetToRental(ResultSet rs) throws SQLException {
         return new Rental(
                 rs.getInt("id"),

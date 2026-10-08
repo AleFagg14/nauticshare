@@ -49,6 +49,10 @@ public class MainApp {
         System.out.println("║     Benvenuto in NauticShare     ║");
         System.out.println("╚══════════════════════════════════╝");
 
+        //FUNZIONE DI DEBUG PER VERIFICARE IL CALCOLO DELL'HASH DELLA PASSWORD
+       // System.out.println("Hash di 1234: "
+        //       Integer.toHexString("1234".hashCode()));
+
         if (!ConnectionManager.testConnection()) {
             System.err.println("Impossibile connettersi al database.");
             System.err.println("Verifica db.properties e che PostgreSQL sia attivo.");

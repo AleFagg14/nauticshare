@@ -9,6 +9,7 @@ public interface RentalDAO {
     boolean insert(Rental rental);
     Rental findById(int id);
     List<Rental> findAll();
+    boolean update(Rental rental);
     boolean delete(int id);
 
     // Query custom

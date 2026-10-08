@@ -116,7 +116,8 @@ public class RentalServiceImpl implements RentalService {
                 0.0 // verrà calcolato subito sotto
         );
 
-        double price = rental.calculatePrice();
+        // Passiamo la tipologia di barca per il calcolo differenziato
+        double price = rental.calculatePrice(boat.getType());
         rental.setTotalPrice(price);
 
         // Salvataggio
@@ -208,11 +209,27 @@ public class RentalServiceImpl implements RentalService {
                             "il noleggio è già iniziato o concluso");
         }
 
-        // Aggiorna il numero di partecipanti e ricalcola il prezzo
+        // Recupera la barca per conoscere il tipo e calcolare il prezzo corretto
+        Boat boat = boatDAO.findById(rental.getBoatId());
+        if (boat == null) {
+            throw new BoatNotFoundException(
+                    "Barca con id " + rental.getBoatId() + " non trovata");
+        }
+
+        // Verifica capienza massima — non si supera il numero di posti della barca
+        if (rental.getNumParticipants() + 1 > boat.getSeats()) {
+            throw new UnauthorizedOperationException(
+                    "Capienza massima raggiunta: la barca '" +
+                            boat.getName() + "' ha " + boat.getSeats() +
+                            " posti totali");
+        }
+
+        // Incrementa partecipanti e ricalcola prezzo con tipo barca
         rental.setNumParticipants(rental.getNumParticipants() + 1);
-        double newPrice = rental.calculatePrice();
+        double newPrice = rental.calculatePrice(boat.getType());
         rental.setTotalPrice(newPrice);
 
-        return rentalDAO.insert(rental);
+        // Update — non insert — aggiorna il record esistente
+        return rentalDAO.update(rental);
     }
 }

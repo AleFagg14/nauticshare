@@ -3,6 +3,8 @@ package it.unifi.nauticshare.model;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
+import static it.unifi.nauticshare.model.BoatType.*;
+
 public class Rental {
     private static final double DAILY_RATE = 100.0;
     private static final double PARTICIPANT_FEE = 10.0;
@@ -14,6 +16,7 @@ public class Rental {
     private LocalDate endDate;
     private int numParticipants;
     private double totalPrice;
+    private BoatType boatType;
 
     public Rental() {}
 
@@ -41,13 +44,33 @@ public class Rental {
     }
 
     // Calcola prezzo: giorni × DAILY_RATE + partecipanti × PARTICIPANT_FEE
+    // Calcolo basato sul tipo di imbarcazione
+    public double calculatePrice(BoatType boatType) {
+        if (startDate == null || endDate == null || endDate.isBefore(startDate)) {
+            throw new IllegalStateException("Date di noleggio non valide.");
+        }
+        long days = ChronoUnit.DAYS.between(startDate, endDate);
+        if (days == 0) days = 1;
+
+        double dailyRate = switch (boatType) {
+            case SPEEDBOAT -> 250.0;
+            case SAILBOAT  -> 450.0;
+            case YACHT     -> 900.0;
+        };
+
+        double extraFee = 25.0; // Tariffa partecipante aggiuntivo
+        this.totalPrice = (days * dailyRate) + (numParticipants * extraFee);
+        return this.totalPrice;
+    }
+
+    //Mantenuto senza argomenti per retrocompatibilità/fallback
     public double calculatePrice() {
         if (startDate == null || endDate == null || endDate.isBefore(startDate)) {
             throw new IllegalStateException("Date di noleggio non valide.");
         }
         long days = ChronoUnit.DAYS.between(startDate, endDate);
         if (days == 0) days = 1;
-        this.totalPrice = (days * DAILY_RATE) + (numParticipants * PARTICIPANT_FEE);
+        this.totalPrice = (days * 100.0) + (numParticipants * 10.0);
         return this.totalPrice;
     }
 

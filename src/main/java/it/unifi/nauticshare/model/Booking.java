@@ -41,6 +41,32 @@ public class Booking {
         this.regType = regType;
     }
 
+    // Calcola prezzo dell'uscita con skipper a persona in base al tipo di barca
+    public double calculatePrice(BoatType boatType) {
+        if (seatsBooked <= 0) {
+            throw new IllegalStateException("Il numero di posti prenotati deve essere maggiore di zero.");
+        }
+
+        double pricePerSeat = switch (boatType) {
+            case SAILBOAT  -> 80.0;
+            case SPEEDBOAT -> 100.0;
+            case YACHT     -> 180.0;
+        };
+
+        this.totalPrice = seatsBooked * pricePerSeat;
+        return this.totalPrice;
+    }
+
+    // Fallback senza boatType — usa tariffa base
+    public double calculatePrice() {
+        if (seatsBooked <= 0) {
+            throw new IllegalStateException(
+                    "Il numero di posti deve essere maggiore di zero.");
+        }
+        this.totalPrice = seatsBooked * 100.0; // tariffa base generica
+        return this.totalPrice;
+    }
+
     // Cancellabile solo se la data dell'uscita è futura
     public boolean isCancellable() {
         return date != null && date.isAfter(LocalDate.now());
