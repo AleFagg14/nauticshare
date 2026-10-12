@@ -61,7 +61,12 @@ class RentalControllerTest {
     }
 
     private void resetDatabase() throws SQLException, IOException {
-        executeSqlFile("sql/reset.sql");
+        try (Connection conn = ConnectionManager.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(
+                    "TRUNCATE TABLE registration, booking, rental, " +
+                            "skipper, boat, member RESTART IDENTITY CASCADE");
+        }
         executeSqlFile("sql/schema.sql");
         executeSqlFile("sql/default.sql");
     }

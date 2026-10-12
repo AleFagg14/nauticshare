@@ -45,7 +45,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Booking createBooking(BookingDTO dto) {
 
-        // Validazione data
+
         if (dto.getDate() == null) {
             throw new IllegalArgumentException(
                     "La data della prenotazione è obbligatoria");
@@ -59,22 +59,19 @@ public class BookingServiceImpl implements BookingService {
                     "Il numero di posti deve essere maggiore di 0");
         }
 
-        // Verifica membro
         Member member = memberDAO.findById(dto.getMemberId());
         if (member == null) {
             throw new MemberNotFoundException(
                     "Membro con id " + dto.getMemberId() + " non trovato");
         }
 
-        // Verifica barca
         Boat boat = boatDAO.findById(dto.getBoatId());
         if (boat == null) {
             throw new BoatNotFoundException(
                     "Barca con id " + dto.getBoatId() + " non trovata");
         }
 
-        //  Verifica skipper assegnato
-        // Un Booking richiede sempre uno skipper sulla barca.
+
         Skipper skipper = skipperDAO.findByBoatId(dto.getBoatId());
         if (skipper == null) {
             throw new IllegalArgumentException(
@@ -82,8 +79,7 @@ public class BookingServiceImpl implements BookingService {
                             "assegnato. Usa il Noleggio Diretto se hai la patente.");
         }
 
-        //  Verifica capienza
-        // 1 posto è sempre riservato allo skipper
+
         int maxSeats = boat.getSeats() - 1;
         if (dto.getSeatsBooked() > maxSeats) {
             throw new IllegalArgumentException(
@@ -92,28 +88,26 @@ public class BookingServiceImpl implements BookingService {
                             "Un posto è riservato allo skipper.");
         }
 
-        // Verifica disponibilità
-        // hasOverlap controlla sia Booking che Rental per quella data
+        //Verifica disponibilità
         if (bookingDAO.hasOverlap(dto.getBoatId(), dto.getDate())) {
             throw new BookingConflictException(
                     "La barca '" + boat.getName() + "' non è disponibile " +
                             "il giorno " + dto.getDate());
         }
 
-        // Calcolo prezzo
-        // Prezzo = numero di posti × tariffa per posto
-        double totalPrice = dto.getSeatsBooked() * SEAT_PRICE;
-
-        // Creazione oggetto Booking
+        //Calcolo prezzo dinamico basato sul tipo di barca
         Booking booking = new Booking(
                 dto.getMemberId(),
                 dto.getBoatId(),
-                skipper.getId(),        // skipperId preso dalla barca
+                skipper.getId(),
                 dto.getDate(),
                 dto.getSeatsBooked(),
-                totalPrice,
+                0.0,
                 dto.getRegType()
         );
+        // calculatePrice(BoatType) applica le tariffe corrette
+        double totalPrice = booking.calculatePrice(boat.getType());
+        booking.setTotalPrice(totalPrice);
 
         boolean inserted = bookingDAO.insert(booking);
         if (!inserted) {
@@ -121,7 +115,7 @@ public class BookingServiceImpl implements BookingService {
                     "Errore durante il salvataggio della prenotazione");
         }
 
-        // Recupera il booking appena inserito
+        // Recupera il booking con l'id assegnato dal DB
         return bookingDAO.findByMemberId(dto.getMemberId())
                 .stream()
                 .filter(b -> b.getDate().equals(dto.getDate())
